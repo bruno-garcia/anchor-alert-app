@@ -1,47 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
-             xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
-             xmlns:maps1="clr-namespace:Microsoft.Maui.Maps;assembly=Microsoft.Maui.Maps"
-             x:Class="AnchorAlertApp.MainPage">
-
-            <maps:Map>
+         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+         xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+         xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
+         xmlns:maps1="clr-namespace:Microsoft.Maui.Maps;assembly=Microsoft.Maui.Maps"
+         x:Class="AnchorAlertApp.MainPage">
+<StackLayout Margin="10">
+    <maps:Map x:Name="map">
+        <x:Arguments>
+            <maps1:MapSpan>
                 <x:Arguments>
-                    <maps1:MapSpan>
+                    <sensors:Location>
                         <x:Arguments>
-                            <sensors:Location>
-                                <x:Arguments>
-                                    <x:Double>37.79752</x:Double>
-                                    <x:Double>-122.40183</x:Double>
-                                </x:Arguments>
-                            </sensors:Location>
-                            <x:Double>0.01</x:Double>
-                            <x:Double>0.01</x:Double>
+                            <x:Double>37.79752</x:Double>
+                            <x:Double>-122.40183</x:Double>
                         </x:Arguments>
-                    </maps1:MapSpan>
+                    </sensors:Location>
+                    <x:Double>0.01</x:Double>
+                    <x:Double>0.01</x:Double>
                 </x:Arguments>
-                <maps:Map.MapElements>
-                    <maps:Circle StrokeColor="#88FF0000"
-                                 StrokeWidth="8"
-                                 FillColor="#88FFC0CB">
-                        <maps:Circle.Center>
-                            <sensors:Location>
-                                <x:Arguments>
-                                    <x:Double>37.79752</x:Double>
-                                    <x:Double>-122.40183</x:Double>
-                                </x:Arguments>
-                            </sensors:Location>
-                        </maps:Circle.Center>
-                        <maps:Circle.Radius>
-                            <maps1:Distance>
-                                <x:Arguments>
-                                    <x:Double>250</x:Double>
-                                </x:Arguments>
-                            </maps1:Distance>
-                        </maps:Circle.Radius>
-                    </maps:Circle>
-                </maps:Map.MapElements>
-            </maps:Map>
-
+            </maps1:MapSpan>
+        </x:Arguments>
+        <maps:Map.MapElements>
+            <maps:Circle StrokeColor="#88FFF900"
+                         StrokeWidth="8"
+                         FillColor="#88EDFFAC">
+                <maps:Circle.Center>
+                    <sensors:Location>
+                        <x:Arguments>
+                            <x:Double>37.79752</x:Double>
+                            <x:Double>-122.40183</x:Double>
+                        </x:Arguments>
+                    </sensors:Location>
+                </maps:Circle.Center>
+                <maps:Circle.Radius>
+                    <maps1:Distance>
+                        <x:Arguments>
+                            <x:Double>250</x:Double>
+                        </x:Arguments>
+                    </maps1:Distance>
+                </maps:Circle.Radius>
+            </maps:Circle>
+        </maps:Map.MapElements>
+    </maps:Map>
+    <Slider Margin="20,0,20,0"
+            Maximum="18"
+            Minimum="1"
+            Value="12"
+            ValueChanged="OnSliderValueChanged" />
+    <StackLayout Orientation="Horizontal"
+                 HorizontalOptions="Center"
+                 Spacing="30">
+        <Button Text="Street"
+                Clicked="OnButtonClicked" />
+        <Button Text="Satellite"
+                Clicked="OnButtonClicked" />
+        <Button Text="Hybrid"
+                Clicked="OnButtonClicked" />
+    </StackLayout>
+</StackLayout>
 </ContentPage>
