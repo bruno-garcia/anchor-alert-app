@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 
 namespace AnchorAlertApp;
@@ -9,27 +10,43 @@ public partial class MainPage : ContentPage
 
     private CancellationTokenSource? _currentLocationCancelTokenSource;
     private bool _isCheckingLocation;
+    private double _latLongDegrees;
 
     public MainPage(ILogger<MainPage> logger)
-	{
+    {
         _logger = logger;
         InitializeComponent();
     }
 
     protected override async void OnAppearing()
     {
-        // Triggers the permission request:
-        // map.IsShowingUser = true;
-
         Geolocation.LocationChanged += (_, args) =>
         {
+            map.IsShowingUser = true;
+
             // var location = await GetCurrentLocation();
             var location = args.Location;
 
             _logger.LogDebug($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Accuracy: {location.Accuracy}");
 
-            var mapSpan = MapSpan.FromCenterAndRadius(location, Distance.FromKilometers(0.444));
-            map.MoveToRegion(mapSpan);
+            // var distance = Distance.FromMeters(0); // zoom
+            // var mapSpan = MapSpan.FromCenterAndRadius(location, distance);
+
+            if (map.VisibleRegion is not null)
+            {
+                var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
+                map.MoveToRegion(mapSpan);
+            }
+
+            map.MapElements.Add(new Circle
+            {
+                StrokeColor = Color.FromArgb("#88FFF900"),
+                StrokeWidth = 8,
+                FillColor = Color.FromArgb("#88EDFFAC"),
+                Center = location
+            });
+
+            // var safeArea = new MapSpan(location, 0.01, 0.01);
         };
 
         await Geolocation.StartListeningForegroundAsync(
@@ -39,7 +56,8 @@ public partial class MainPage : ContentPage
                 // Android	  0 - 100
                 // iOS	      ~0
                 // Windows	  <= 10
-                GeolocationAccuracy.Best,
+                // GeolocationAccuracy.Best,
+                GeolocationAccuracy.Medium,
                 TimeSpan.FromSeconds(10)));
 
         base.OnAppearing();
@@ -48,10 +66,10 @@ public partial class MainPage : ContentPage
     private void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
     {
         double zoomLevel = e.NewValue;
-        double latLongDegrees = 360 / Math.Pow(2, zoomLevel);
+        _latLongDegrees = 360 / Math.Pow(2, zoomLevel);
         if (map.VisibleRegion is not null)
         {
-            map.MoveToRegion(new MapSpan(map.VisibleRegion.Center, latLongDegrees, latLongDegrees));
+            map.MoveToRegion(new MapSpan(map.VisibleRegion.Center, _latLongDegrees, _latLongDegrees));
         }
     }
 

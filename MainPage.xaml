@@ -8,18 +8,6 @@
 <StackLayout Margin="10">
     <maps:Map x:Name="map">
         <x:Arguments>
-            <maps1:MapSpan>
-                <x:Arguments>
-                    <sensors:Location>
-                        <x:Arguments>
-                            <x:Double>37.79752</x:Double>
-                            <x:Double>-122.40183</x:Double>
-                        </x:Arguments>
-                    </sensors:Location>
-                    <x:Double>0.01</x:Double>
-                    <x:Double>0.01</x:Double>
-                </x:Arguments>
-            </maps1:MapSpan>
         </x:Arguments>
         <maps:Map.MapElements>
             <maps:Circle StrokeColor="#88FFF900"
