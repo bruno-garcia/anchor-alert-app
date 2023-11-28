@@ -11,6 +11,8 @@ public partial class MainPage : ContentPage
     private CancellationTokenSource? _currentLocationCancelTokenSource;
     private bool _isCheckingLocation;
     private double _latLongDegrees;
+    private readonly Distance _safeAreaRadius = Distance.FromMeters(250);
+    private Location? _anchorLocation = null;
 
     public MainPage(ILogger<MainPage> logger)
     {
@@ -20,11 +22,8 @@ public partial class MainPage : ContentPage
 
     protected override async void OnAppearing()
     {
-        base.OnAppearing();
-
         Geolocation.LocationChanged += (_, args) =>
         {
-            // var location = await GetCurrentLocation();
             var location = args.Location;
 
             _logger.LogDebug($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Accuracy: {location.Accuracy}");
@@ -32,13 +31,15 @@ public partial class MainPage : ContentPage
             // var distance = Distance.FromMeters(0); // zoom
             // var mapSpan = MapSpan.FromCenterAndRadius(location, distance);
 
-            if (map.VisibleRegion is not null)
+            if (map.VisibleRegion is not null && _anchorLocation is null)
             {
+                _anchorLocation = location;
+                Console.WriteLine(map.VisibleRegion.Radius.Meters);
                 var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
-                // safeArea.Center = location;
                 map.MoveToRegion(mapSpan);
             }
 
+            map.IsShowingUser = true;
             if (map.MapElements.Count == 0)
             {
                 map.MapElements.Add(new Circle
@@ -46,13 +47,13 @@ public partial class MainPage : ContentPage
                     StrokeColor = Color.FromArgb("#88FFF900"),
                     StrokeWidth = 8,
                     FillColor = Color.FromArgb("#88EDFFAC"),
-                    Radius = Distance.FromMeters(250),
-                    Center = location,
+                    Radius = _safeAreaRadius,
+                    Center = _anchorLocation,
                 });
             }
             else if (map.MapElements[0] is Circle safeArea)
             {
-                safeArea.Center = location;
+                safeArea.Center = _anchorLocation;
             }
         };
 
@@ -65,6 +66,8 @@ public partial class MainPage : ContentPage
                 // Windows	  <= 10
                 GeolocationAccuracy.Best,
                 TimeSpan.FromSeconds(10)));
+
+        base.OnAppearing();
     }
 
     private void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
