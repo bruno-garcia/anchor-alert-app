@@ -20,10 +20,10 @@ public partial class MainPage : ContentPage
 
     protected override async void OnAppearing()
     {
+        base.OnAppearing();
+
         Geolocation.LocationChanged += (_, args) =>
         {
-            map.IsShowingUser = true;
-
             // var location = await GetCurrentLocation();
             var location = args.Location;
 
@@ -35,18 +35,25 @@ public partial class MainPage : ContentPage
             if (map.VisibleRegion is not null)
             {
                 var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
+                // safeArea.Center = location;
                 map.MoveToRegion(mapSpan);
             }
 
-            map.MapElements.Add(new Circle
+            if (map.MapElements.Count == 0)
             {
-                StrokeColor = Color.FromArgb("#88FFF900"),
-                StrokeWidth = 8,
-                FillColor = Color.FromArgb("#88EDFFAC"),
-                Center = location
-            });
-
-            // var safeArea = new MapSpan(location, 0.01, 0.01);
+                map.MapElements.Add(new Circle
+                {
+                    StrokeColor = Color.FromArgb("#88FFF900"),
+                    StrokeWidth = 8,
+                    FillColor = Color.FromArgb("#88EDFFAC"),
+                    Radius = Distance.FromMeters(250),
+                    Center = location,
+                });
+            }
+            else if (map.MapElements[0] is Circle safeArea)
+            {
+                safeArea.Center = location;
+            }
         };
 
         await Geolocation.StartListeningForegroundAsync(
@@ -56,11 +63,8 @@ public partial class MainPage : ContentPage
                 // Android	  0 - 100
                 // iOS	      ~0
                 // Windows	  <= 10
-                // GeolocationAccuracy.Best,
-                GeolocationAccuracy.Medium,
+                GeolocationAccuracy.Best,
                 TimeSpan.FromSeconds(10)));
-
-        base.OnAppearing();
     }
 
     private void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
