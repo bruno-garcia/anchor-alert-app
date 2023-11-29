@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
 
@@ -11,7 +12,8 @@ public partial class MainPage : ContentPage
     private CancellationTokenSource? _currentLocationCancelTokenSource;
     private bool _isCheckingLocation;
     private double _latLongDegrees;
-    private readonly Distance _safeAreaRadius = Distance.FromMeters(250);
+    // TODO: Calculated
+    private readonly Distance _safeAreaRadius = Distance.FromMeters(100);
     private Location? _anchorLocation = null;
 
     public MainPage(ILogger<MainPage> logger)
@@ -31,17 +33,21 @@ public partial class MainPage : ContentPage
             // var distance = Distance.FromMeters(0); // zoom
             // var mapSpan = MapSpan.FromCenterAndRadius(location, distance);
 
-            if (map.VisibleRegion is not null && _anchorLocation is null)
+            if (map.VisibleRegion is not null)
             {
-                _anchorLocation = location;
                 Console.WriteLine(map.VisibleRegion.Radius.Meters);
-                var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
-                map.MoveToRegion(mapSpan);
             }
 
+            // TODO: Show the boat instead
             map.IsShowingUser = true;
-            if (map.MapElements.Count == 0)
+
+            if (_anchorLocation is null)
             {
+                _anchorLocation = location;
+                var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
+                map.MoveToRegion(mapSpan);
+
+                Debug.Assert(map.MapElements.Count == 0);
                 map.MapElements.Add(new Circle
                 {
                     StrokeColor = Color.FromArgb("#88FFF900"),
@@ -51,8 +57,21 @@ public partial class MainPage : ContentPage
                     Center = _anchorLocation,
                 });
             }
+
             else if (map.MapElements[0] is Circle safeArea)
             {
+                var distanceOriginalAnchorLocationToBoat = Location.CalculateDistance(
+                    _anchorLocation,
+                    location,
+                    DistanceUnits.Kilometers) * 1000;
+
+                // TODO: Take precision into account
+                // TODO: Take rode/chain length and depth into account
+                if (distanceOriginalAnchorLocationToBoat - _safeAreaRadius.Meters > 1)
+                {
+                    safeArea.FillColor = Colors.Gold;
+                    safeArea.StrokeColor = Colors.Coral;
+                }
                 safeArea.Center = _anchorLocation;
             }
         };
