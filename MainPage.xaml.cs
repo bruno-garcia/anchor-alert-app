@@ -11,10 +11,11 @@ public partial class MainPage : ContentPage
 
     private CancellationTokenSource? _currentLocationCancelTokenSource;
     private bool _isCheckingLocation;
-    private double _latLongDegrees;
+    private double _latLongDegrees = 0.005;
     // TODO: Calculated
     private readonly Distance _safeAreaRadius = Distance.FromMeters(100);
     private Location? _anchorLocation = null;
+    private bool _isInSafeArea = true;
 
     public MainPage(ILogger<MainPage> logger)
     {
@@ -43,21 +44,22 @@ public partial class MainPage : ContentPage
 
             if (_anchorLocation is null)
             {
+                _isInSafeArea = true;
                 _anchorLocation = location;
-                var mapSpan = new MapSpan(location, _latLongDegrees, _latLongDegrees);
+
+                var mapSpan = new MapSpan(_anchorLocation, _latLongDegrees, _latLongDegrees);
                 map.MoveToRegion(mapSpan);
 
                 Debug.Assert(map.MapElements.Count == 0);
                 map.MapElements.Add(new Circle
                 {
-                    StrokeColor = Color.FromArgb("#88FFF900"),
+                    StrokeColor = Colors.Aquamarine,
+                    FillColor = Colors.Cyan,
                     StrokeWidth = 8,
-                    FillColor = Color.FromArgb("#88EDFFAC"),
                     Radius = _safeAreaRadius,
                     Center = _anchorLocation,
                 });
             }
-
             else if (map.MapElements[0] is Circle safeArea)
             {
                 var distanceOriginalAnchorLocationToBoat = Location.CalculateDistance(
@@ -71,6 +73,13 @@ public partial class MainPage : ContentPage
                 {
                     safeArea.FillColor = Colors.Gold;
                     safeArea.StrokeColor = Colors.Coral;
+                    _isInSafeArea = false;
+                }
+                else
+                {
+                    safeArea.StrokeColor = Colors.Aquamarine;
+                    safeArea.FillColor = Colors.Cyan;
+                    _isInSafeArea = true;
                 }
                 safeArea.Center = _anchorLocation;
             }
