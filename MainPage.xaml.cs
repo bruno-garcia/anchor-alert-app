@@ -25,65 +25,9 @@ public partial class MainPage : ContentPage
 
     protected override async void OnAppearing()
     {
-        Geolocation.LocationChanged += (_, args) =>
-        {
-            var location = args.Location;
+        map.MapType = MapType.Hybrid;
 
-            _logger.LogDebug($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Accuracy: {location.Accuracy}");
-
-            // var distance = Distance.FromMeters(0); // zoom
-            // var mapSpan = MapSpan.FromCenterAndRadius(location, distance);
-
-            if (map.VisibleRegion is not null)
-            {
-                Console.WriteLine(map.VisibleRegion.Radius.Meters);
-            }
-
-            // TODO: Show the boat instead
-            map.IsShowingUser = true;
-
-            if (_anchorLocation is null)
-            {
-                _isInSafeArea = true;
-                _anchorLocation = location;
-
-                var mapSpan = new MapSpan(_anchorLocation, _latLongDegrees, _latLongDegrees);
-                map.MoveToRegion(mapSpan);
-
-                Debug.Assert(map.MapElements.Count == 0);
-                map.MapElements.Add(new Circle
-                {
-                    StrokeColor = Colors.Aquamarine,
-                    FillColor = Colors.Cyan,
-                    StrokeWidth = 8,
-                    Radius = _safeAreaRadius,
-                    Center = _anchorLocation,
-                });
-            }
-            else if (map.MapElements[0] is Circle safeArea)
-            {
-                var distanceOriginalAnchorLocationToBoat = Location.CalculateDistance(
-                    _anchorLocation,
-                    location,
-                    DistanceUnits.Kilometers) * 1000;
-
-                // TODO: Take precision into account
-                // TODO: Take rode/chain length and depth into account
-                if (distanceOriginalAnchorLocationToBoat - _safeAreaRadius.Meters > 1)
-                {
-                    safeArea.FillColor = Colors.Gold;
-                    safeArea.StrokeColor = Colors.Coral;
-                    _isInSafeArea = false;
-                }
-                else
-                {
-                    safeArea.StrokeColor = Colors.Aquamarine;
-                    safeArea.FillColor = Colors.Cyan;
-                    _isInSafeArea = true;
-                }
-                safeArea.Center = _anchorLocation;
-            }
-        };
+        Geolocation.LocationChanged += OnGeolocationOnLocationChanged;
 
         await Geolocation.StartListeningForegroundAsync(
             new GeolocationListeningRequest(
@@ -96,6 +40,68 @@ public partial class MainPage : ContentPage
                 TimeSpan.FromSeconds(10)));
 
         base.OnAppearing();
+    }
+
+    private void OnGeolocationOnLocationChanged(object? _, GeolocationLocationChangedEventArgs args)
+        => UpdateMap(args.Location);
+
+    private void UpdateMap(Location location)
+    {
+        _logger.LogDebug($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Accuracy: {location.Accuracy}");
+
+        // var distance = Distance.FromMeters(0); // zoom
+        // var mapSpan = MapSpan.FromCenterAndRadius(location, distance);
+
+        if (map.VisibleRegion is not null)
+        {
+            Console.WriteLine(map.VisibleRegion.Radius.Meters);
+        }
+
+        // TODO: Show the boat instead
+        map.IsShowingUser = true;
+
+        if (_anchorLocation is null)
+        {
+            _isInSafeArea = true;
+            // TODO: Mocking the anchor drop here relative to where the simulator puts us
+            // This can be set by user input when anchor is dropped.
+            // _anchorLocation = location;
+            _anchorLocation = new Location(42.688329, 17.939085);
+
+            var mapSpan = new MapSpan(_anchorLocation, _latLongDegrees, _latLongDegrees);
+            map.MoveToRegion(mapSpan);
+
+            Debug.Assert(map.MapElements.Count == 0);
+            map.MapElements.Add(new Circle
+            {
+                StrokeColor = Colors.Aquamarine,
+                FillColor = Color.FromArgb("#80FFFFFF"),
+                // StrokeWidth = 8,
+                StrokeWidth = 1,
+                Radius = _safeAreaRadius,
+                Center = _anchorLocation,
+            });
+        }
+        else if (map.MapElements[0] is Circle safeArea)
+        {
+            var distanceOriginalAnchorLocationToBoat = Location.CalculateDistance(_anchorLocation, location, DistanceUnits.Kilometers) * 1000;
+
+            // TODO: Take precision into account
+            // TODO: Take rode/chain length and depth into account
+            if (distanceOriginalAnchorLocationToBoat - _safeAreaRadius.Meters > 1)
+            {
+                safeArea.StrokeColor = Colors.Coral;
+                safeArea.StrokeWidth = 4;
+                _isInSafeArea = false;
+            }
+            else
+            {
+                safeArea.StrokeColor = Colors.Aquamarine;
+                safeArea.Center = _anchorLocation;
+                safeArea.StrokeWidth = 1;
+                _isInSafeArea = true;
+            }
+        }
     }
 
     private void OnSliderValueChanged(object sender, ValueChangedEventArgs e)
