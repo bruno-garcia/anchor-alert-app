@@ -57,9 +57,6 @@ public partial class MainPage : ContentPage
             Console.WriteLine(map.VisibleRegion.Radius.Meters);
         }
 
-        // TODO: Show the boat instead
-        map.IsShowingUser = true;
-
         if (_anchorLocation is null)
         {
             _isInSafeArea = true;
@@ -67,6 +64,21 @@ public partial class MainPage : ContentPage
             // This can be set by user input when anchor is dropped.
             _anchorLocation = location;
             // _anchorLocation = new Location(42.688329, 17.939085);
+
+
+            // .NET MAUI apps can respond to system theme changes on iOS 13 or greater, Android 10 (API 29) or greater, macOS 10.14 or greater, and Windows 10 or greater.
+            // TODO: There's a whole theming thing to deal with this: https://learn.microsoft.com/en-us/dotnet/maui/user-interface/system-theme-changes?view=net-maui-8.0
+            var fileName = Application.Current?.RequestedTheme is AppTheme.Dark ? "anchor_dark.png" : "anchor_light.png";
+            var anchorPin = new AnchorPin
+            {
+                ImageSource = fileName,
+                Label = "Anchor",
+                Location = location
+            };
+            map.Pins.Add(anchorPin);
+
+            // TODO: Show the boat instead
+            // map.IsShowingUser = true;
 
             var mapSpan = new MapSpan(_anchorLocation, _latLongDegrees, _latLongDegrees);
             map.MoveToRegion(mapSpan);
@@ -114,7 +126,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async void OnButtonClicked(object sender, EventArgs e)
+    private void OnButtonClicked(object sender, EventArgs e)
     {
         var button = sender as Button;
         map.MapType = button?.Text switch
