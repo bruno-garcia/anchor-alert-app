@@ -34,6 +34,6 @@
 		<string>High accuracy is needed to alert you immediately if you're outside the safe radius.</string>
 	</dict>
 	<key>XSAppIconAssets</key>
-	<string>Assets.xcassets/appicon.appiconset</string>
+	<string>Assets.xcassets/anchor_app_icon.appiconset</string>
 </dict>
 </plist>

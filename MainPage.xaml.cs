@@ -65,8 +65,8 @@ public partial class MainPage : ContentPage
             _isInSafeArea = true;
             // TODO: Mocking the anchor drop here relative to where the simulator puts us
             // This can be set by user input when anchor is dropped.
-            // _anchorLocation = location;
-            _anchorLocation = new Location(42.688329, 17.939085);
+            _anchorLocation = location;
+            // _anchorLocation = new Location(42.688329, 17.939085);
 
             var mapSpan = new MapSpan(_anchorLocation, _latLongDegrees, _latLongDegrees);
             map.MoveToRegion(mapSpan);
